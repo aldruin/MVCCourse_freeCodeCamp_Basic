@@ -1,15 +1,48 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MyApp.Data;
 using MyApp.Models;
 
 namespace MyApp.Controllers
 {
     public class ItemsController : Controller
     {
-        public IActionResult Overview()
-        {
+        private readonly MyAppContext _context;
 
-            var item = new Item() { Name = "Keyboard" };
+        public ItemsController(MyAppContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var item = await _context.Items.ToListAsync();
             return View(item);
         }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([Bind("Id, Name")] Item item)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Items.Add(item);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
+            return View(item);
+        }
+
+        // public IActionResult Overview()
+        // {
+
+        //     var item = new Item() { Name = "Keyboard" };
+        //     return View(item);
+        // }
     }
 }
